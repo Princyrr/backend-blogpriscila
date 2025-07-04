@@ -1,9 +1,5 @@
+import { v2 as cloudinary } from 'cloudinary'
 import Post from '../models/Post.js'
-import fs from 'fs'
-import path from 'path'
-import fsPromises from 'fs/promises'
-
-const __dirname = path.resolve(); // garante caminho absoluto mesmo com ESModules
 
 export const listarPosts = async (req, res) => {
   const posts = await Post.find().sort({ createdAt: -1 })
@@ -11,26 +7,27 @@ export const listarPosts = async (req, res) => {
 }
 
 export const criarPost = async (req, res) => {
+console.log('req.file:', req.file)
+
   const { conteudo } = req.body
-  const imagem = req.file ? `/uploads/${req.file.filename}` : null
-  const novoPost = new Post({ conteudo, imagem })
+  const imagemUrl = req.file ? req.file.path : null
+  const imagemId = req.file ? req.file.filename || req.file.public_id : null
+
+  const novoPost = new Post({ conteudo, imagemUrl, imagemId })
+  
   await novoPost.save()
   res.status(201).json(novoPost)
 }
+
 
 export const deletarPost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
     if (!post) return res.status(404).json({ message: 'Post não encontrado' })
 
-    if (post.imagem) {
-  try {
-    const filePath = path.join(__dirname, 'uploads', path.basename(post.imagem))
-    await fsPromises.unlink(filePath)
-  } catch (err) {
-    console.error('Erro ao deletar imagem:', err)
-  }
-}
+    if (post.imagemId) {
+      await cloudinary.uploader.destroy(post.imagemId)
+    }
 
     await post.deleteOne()
     res.json({ message: 'Post deletado com sucesso' })
