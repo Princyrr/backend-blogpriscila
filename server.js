@@ -21,7 +21,10 @@ app.use(express.json())
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 app.use('/posts', postRoutes)
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  dbName: 'blogpriscila'
+})
+
   .then(() => {
     console.log('Servidor rodando na porta 5000')
     console.log('Mongo conectado no banco:', mongoose.connection.name)
