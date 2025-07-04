@@ -1,6 +1,6 @@
 import express from 'express'
 import multer from 'multer'
-import { criarPost, listarPosts } from '../controllers/postController.js'
+import { criarPost, listarPosts, deletarPost } from '../controllers/postController.js'
 
 const router = express.Router()
 
@@ -12,5 +12,6 @@ const upload = multer({ storage })
 
 router.get('/', listarPosts)
 router.post('/', upload.single('imagem'), criarPost)
+router.delete('/:id', deletarPost) // <<<<<<<<<<<<<<
 
 export default router
