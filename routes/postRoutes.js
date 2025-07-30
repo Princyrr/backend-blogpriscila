@@ -5,7 +5,8 @@ import {
   deletarPost,
   curtirPost,
   comentarPost,
-  deletarComentario // ✅ nova função
+  deletarComentario, // ✅ nova função
+  aprovarComentario, // 👈 importar aqui
 } from '../controllers/postController.js'
 
 import { v2 as cloudinary } from 'cloudinary'
@@ -43,13 +44,12 @@ router.post('/:id/like', curtirPost)
 router.post('/:id/comment', comentarPost)
 // rota para deletar comentário no backend (exemplo com Express)
 router.delete('/:id/comments/:commentId', deletarComentario)
-
+router.patch('/posts/:id/comments/:commentId/aprovar', aprovarComentario) 
 
 // proteger as rotas sensíveis
 router.post('/', verificarToken, upload.single('imagem'), criarPost)
 router.delete('/:id', verificarToken, deletarPost)
 router.delete('/:id/comments/:commentId', verificarToken, deletarComentario)
-
-
+router.patch('/posts/:postId/comments/:commentId/aprovar', verificarToken, aprovarComentario)
 
 export default router

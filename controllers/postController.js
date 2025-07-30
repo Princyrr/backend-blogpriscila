@@ -80,11 +80,13 @@ export const comentarPost = async (req, res) => {
     const post = await Post.findById(id)
     if (!post) return res.status(404).json({ message: 'Post não encontrado' })
 
-    const novoComentario = {
-      _id: new mongoose.Types.ObjectId(), // 👈 isso é essencial
-      nome,
-      texto
-    }
+   const novoComentario = {
+  _id: new mongoose.Types.ObjectId(),
+  nome,
+  texto,
+  aprovado: false // 👈 agora sim!
+}
+
 
     post.comments.push(novoComentario)
     await post.save()
@@ -172,4 +174,30 @@ export const loginAdmin = (req, res) => {
   }
 
   return res.status(403).json({ message: 'Senha incorreta' })
+}
+
+// ✅ Aprovar comentário
+export const aprovarComentario = async (req, res) => {
+  try {
+    const { id, commentId } = req.params
+
+    if (!Types.ObjectId.isValid(id) || !Types.ObjectId.isValid(commentId)) {
+      return res.status(400).json({ message: 'ID inválido' })
+    }
+
+    const post = await Post.findById(id)
+    if (!post) return res.status(404).json({ message: 'Post não encontrado' })
+
+    const comment = post.comments.find(c => c._id.equals(new Types.ObjectId(commentId)))
+
+    if (!comment) return res.status(404).json({ message: 'Comentário não encontrado' })
+
+    comment.aprovado = true
+    await post.save()
+
+    res.json({ message: 'Comentário aprovado com sucesso', comments: post.comments })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Erro ao aprovar comentário' })
+  }
 }
