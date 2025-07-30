@@ -1,6 +1,8 @@
 import { v2 as cloudinary } from 'cloudinary'
 import Post from '../models/Post.js'
 import { Types } from 'mongoose' // para validar ObjectId
+import mongoose from 'mongoose'
+
 
 // 🔎 Listar posts
 export const listarPosts = async (req, res) => {
@@ -67,33 +69,37 @@ export const curtirPost = async (req, res) => {
 // 💬 Comentar post - atualizando para salvar objeto { _id, nome, texto }
 export const comentarPost = async (req, res) => {
   try {
+    const { id } = req.params
     const { nome, texto } = req.body
-    if (!nome || !texto || texto.trim() === '') {
-      return res.status(400).json({ message: 'Nome e comentário são obrigatórios' })
+
+    if (!nome || !texto) {
+      return res.status(400).json({ message: 'Nome e texto são obrigatórios' })
     }
 
-    const post = await Post.findById(req.params.id)
+    const post = await Post.findById(id)
     if (!post) return res.status(404).json({ message: 'Post não encontrado' })
 
-    post.comments.push({
-      _id: new Types.ObjectId(),
-      nome: nome.trim(),
-      texto: texto.trim()
-    })
+    const novoComentario = {
+      _id: new mongoose.Types.ObjectId(), // 👈 isso é essencial
+      nome,
+      texto
+    }
 
+    post.comments.push(novoComentario)
     await post.save()
 
-    res.json({ comments: post.comments })
+    res.status(201).json({ message: 'Comentário adicionado', comments: post.comments })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ message: 'Erro ao comentar post' })
+    res.status(500).json({ message: 'Erro ao adicionar comentário' })
   }
 }
 
-// ❌ Deletar comentário
+
 export const deletarComentario = async (req, res) => {
   try {
-    const { postId, commentId } = req.params
+    const postId = req.params.id
+    const commentId = req.params.commentId
 
     if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
       return res.status(400).json({ message: 'ID inválido' })
@@ -102,8 +108,10 @@ export const deletarComentario = async (req, res) => {
     const post = await Post.findById(postId)
     if (!post) return res.status(404).json({ message: 'Post não encontrado' })
 
+    const commentObjectId = new Types.ObjectId(commentId)
+
     const originalCount = post.comments.length
-    post.comments = post.comments.filter(c => c._id.toString() !== commentId)
+    post.comments = post.comments.filter(c => !c._id.equals(commentObjectId))
 
     if (post.comments.length === originalCount) {
       return res.status(404).json({ message: 'Comentário não encontrado' })

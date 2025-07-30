@@ -39,6 +39,10 @@ router.post('/', upload.single('imagem'), criarPost)
 router.delete('/:id', deletarPost)
 router.post('/:id/like', curtirPost)
 router.post('/:id/comment', comentarPost)
-router.delete('/:id/comments/:commentId', deletarComentario) // ✅ Rota para excluir comentário específico
+// rota para deletar comentário no backend (exemplo com Express)
+router.delete('/:id/comments/:commentId', deletarComentario)
+
+
+
 
 export default router
