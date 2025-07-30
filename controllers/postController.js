@@ -201,3 +201,13 @@ export const aprovarComentario = async (req, res) => {
     res.status(500).json({ message: 'Erro ao aprovar comentário' })
   }
 }
+
+export const verificarToken = (req, res, next) => {
+  const token = req.headers.authorization
+
+  if (!token || token !== 'admin-token-validado') {
+    return res.status(403).json({ message: 'Acesso negado' })
+  }
+
+  next()
+}

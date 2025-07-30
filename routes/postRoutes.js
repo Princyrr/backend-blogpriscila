@@ -44,12 +44,14 @@ router.post('/:id/like', curtirPost)
 router.post('/:id/comment', comentarPost)
 // rota para deletar comentário no backend (exemplo com Express)
 router.delete('/:id/comments/:commentId', deletarComentario)
-router.patch('/posts/:id/comments/:commentId/aprovar', aprovarComentario) 
+
 
 // proteger as rotas sensíveis
 router.post('/', verificarToken, upload.single('imagem'), criarPost)
 router.delete('/:id', verificarToken, deletarPost)
 router.delete('/:id/comments/:commentId', verificarToken, deletarComentario)
-router.patch('/posts/:postId/comments/:commentId/aprovar', verificarToken, aprovarComentario)
+router.patch('/:postId/comments/:commentId/aprovar', verificarToken, aprovarComentario)
+
+
 
 export default router
