@@ -125,3 +125,13 @@ export const deletarComentario = async (req, res) => {
     res.status(500).json({ message: 'Erro ao deletar comentário' })
   }
 }
+
+export const loginAdmin = (req, res) => {
+  const { senha } = req.body
+
+  if (senha === process.env.ADMIN_PASSWORD) {
+    return res.json({ token: 'admin-token-validado' }) // pode ser qualquer string
+  }
+
+  return res.status(403).json({ message: 'Senha incorreta' })
+}

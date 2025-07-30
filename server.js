@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import postRoutes from './routes/postRoutes.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import authRoutes from './routes/authRoutes.js'
 
 // Corrige caminhos para __dirname
 const __filename = fileURLToPath(import.meta.url)
@@ -30,6 +31,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 // Rotas
 app.use('/posts', postRoutes)
+
+app.use('/auth', authRoutes)
 
 // Conexão com o MongoDB
 mongoose.connect(process.env.MONGO_URI, {
