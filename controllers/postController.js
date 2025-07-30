@@ -1,3 +1,4 @@
+import nodemailer from 'nodemailer'
 import { v2 as cloudinary } from 'cloudinary'
 import Post from '../models/Post.js'
 import { Types } from 'mongoose' // para validar ObjectId
@@ -88,12 +89,49 @@ export const comentarPost = async (req, res) => {
     post.comments.push(novoComentario)
     await post.save()
 
+   // Configuração do Nodemailer (usar variáveis de ambiente)
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // ou outro serviço que preferir
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    })
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_RECEIVER, // e-mail que vai receber a notificação
+      subject: `Novo comentário no seu blog`,
+      text: `
+        Olá,
+
+        O usuário "${nome}" comentou no seu post:
+
+        "${texto}"
+
+        No post: "${post.conteudo}"
+
+        Atenciosamente,
+        Seu Blog
+      `
+    }
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Erro ao enviar e-mail:', error)
+      } else {
+        console.log('E-mail enviado:', info.response)
+      }
+    })
+
     res.status(201).json({ message: 'Comentário adicionado', comments: post.comments })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Erro ao adicionar comentário' })
   }
 }
+
+
 
 
 export const deletarComentario = async (req, res) => {
