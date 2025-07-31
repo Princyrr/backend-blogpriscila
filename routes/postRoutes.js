@@ -12,7 +12,7 @@ import {
 import { v2 as cloudinary } from 'cloudinary'
 import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import multer from 'multer'
-import { verificarToken } from '../middleware/auth.js'
+
 
 
 // ✅ Configurar Cloudinary
@@ -45,12 +45,8 @@ router.post('/:id/comment', comentarPost)
 // rota para deletar comentário no backend (exemplo com Express)
 router.delete('/:id/comments/:commentId', deletarComentario)
 
+router.patch('/:id/approve-comment', aprovarComentario)
 
-// proteger as rotas sensíveis
-router.post('/', verificarToken, upload.single('imagem'), criarPost)
-router.delete('/:id', verificarToken, deletarPost)
-router.delete('/:id/comments/:commentId', verificarToken, deletarComentario)
-router.patch('/:postId/comments/:commentId/aprovar', verificarToken, aprovarComentario)
 
 
 

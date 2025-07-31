@@ -170,36 +170,38 @@ export const loginAdmin = (req, res) => {
   const { senha } = req.body
 
   if (senha === process.env.ADMIN_PASSWORD) {
-    return res.json({ token: 'admin-token-validado' }) // pode ser qualquer string
+    const token = jwt.sign(
+      { role: 'admin' }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    )
+    return res.json({ token })
   }
 
   return res.status(403).json({ message: 'Senha incorreta' })
 }
 
 
-
+// controllers/postController.js
 
 export const aprovarComentario = async (req, res) => {
+  const { id } = req.params           // ID do post
+  const { commentId } = req.body      // ID do comentário
+
   try {
-    const { postId, commentId } = req.params;
+    const post = await Post.findById(id)
+    if (!post) return res.status(404).json({ message: 'Post não encontrado' })
 
-    if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(commentId)) {
-      return res.status(400).json({ message: 'ID inválido' });
-    }
+    // Busca o comentário pelo _id (usando Mongoose subdocumentos)
+    const comentario = post.comments.id(commentId)
+    if (!comentario) return res.status(404).json({ message: 'Comentário não encontrado' })
 
-    const post = await Post.findById(postId);
-    if (!post) return res.status(404).json({ message: 'Post não encontrado' });
+    comentario.aprovado = true
+    await post.save()
 
-    const comment = post.comments.find(c => c._id.equals(new Types.ObjectId(commentId)));
-
-    if (!comment) return res.status(404).json({ message: 'Comentário não encontrado' });
-
-    comment.aprovado = true;
-    await post.save();
-
-    res.json({ message: 'Comentário aprovado com sucesso', comments: post.comments });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erro ao aprovar comentário' });
+    res.status(200).json({ message: 'Comentário aprovado com sucesso' })
+  } catch (err) {
+    console.error('Erro ao aprovar comentário:', err)
+    res.status(500).json({ message: 'Erro ao aprovar comentário', error: err.message })
   }
 }
