@@ -9,16 +9,7 @@ import mongoose from 'mongoose'
 export const listarPosts = async (req, res) => {
   try {
     const posts = await Post.find().sort({ createdAt: -1 })
-
-   const postsComComentariosAprovados = posts.map(post => {
-  const postObj = post.toObject()
-  postObj.comments = (postObj.comments || []).filter(c => c.aprovado)
-  return postObj
-})
-res.json(postsComComentariosAprovados)
-
-
-    res.json(postsComComentariosAprovados)
+    res.json(posts)  // envia posts com TODOS os comentários
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Erro ao listar posts' })
@@ -195,25 +186,25 @@ export const loginAdmin = (req, res) => {
 // controllers/postController.js
 
 export const aprovarComentario = async (req, res) => {
-  const { id } = req.params
-  const { commentId } = req.body
+  const { id } = req.params           // ID do post
+  const { commentId } = req.body      // ID do comentário
 
   try {
     const post = await Post.findById(id)
     if (!post) return res.status(404).json({ message: 'Post não encontrado' })
 
+    // Busca o comentário pelo _id (usando Mongoose subdocumentos)
     const comentario = post.comments.id(commentId)
     if (!comentario) return res.status(404).json({ message: 'Comentário não encontrado' })
 
     comentario.aprovado = true
     await post.save()
 
-    // Retornar os comentários atualizados (com filtro opcional)
-    const comentariosAprovados = post.comments.filter(c => c.aprovado)
-
-    res.status(200).json({ message: 'Comentário aprovado com sucesso', comments: comentariosAprovados })
+    res.status(200).json({ message: 'Comentário aprovado com sucesso' })
   } catch (err) {
     console.error('Erro ao aprovar comentário:', err)
     res.status(500).json({ message: 'Erro ao aprovar comentário', error: err.message })
   }
 }
+
+
